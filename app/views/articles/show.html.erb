@@ -1,4 +1,7 @@
 <h1> Showing all articles </h1>
+<p>
+  <%= link_to "Create new article", new_articles_path %>
+</p>
 
 <table>
   <tr>
@@ -10,6 +13,8 @@
   <tr>
     <td> <%= article.title %> </td>
     <td> <%= article.description %></td>
+    <td> <%= link_to 'Edit', edit_articles_path(article) %></td>
+    <td> <%= link_to 'Show', articles_path(article) %></td>
   </tr>
       <% end %>
 </table>
