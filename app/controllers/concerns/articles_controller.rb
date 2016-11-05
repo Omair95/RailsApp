@@ -15,7 +15,7 @@ class ArticlesController < ApplicationController
   end
 
   def show
-    @article = Article.all
+    @article = Article.find(params[:id])
   end
 
   def edit
@@ -26,6 +26,10 @@ class ArticlesController < ApplicationController
     #@article = Article.find(params[:id])
     #@article.destroy
     flash[:notice] = "Article succesfully destroyied"
+  end
+
+  def update
+    flash[:notice] = "Article succesfully updated"
   end
 
   private
