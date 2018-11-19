@@ -1,10 +1,10 @@
 ## Pasos para ejecutar la POC de carga distribuida
 
-### 1. Creacion de las imagenes Docker de los diferentes modulos
+### 1. Creación de imágenes Docker 
 
-Para poder ejecutar los principales componentes de este modelo (cache-datagrid-application, cache-admin-application y cache-distributed-load-application) es necesario crear sus respectivas imagenes Docker para que de esta manera se puedan descargar en cualquier momento y de manera automatica desde un repositorio de imagenes publico para su correcto uso en los archivos de configuracion YAML de Kubernetes.
+Para poder ejecutar los principales componentes de este modelo (cache-datagrid-application, cache-admin-application y cache-distributed-load-application) es necesario crear sus respectivas imágenes Docker para que de esta manera se puedan descargar en cualquier momento y de manera automática desde un repositorio de imágenes público para su correcto uso en los archivos de configuracion YAML de Kubernetes.
 
-Para ello se importa el proyecto como un proyecto Maven en un framework de desarollo Java como Eclipse, posteriormente se compila cada modulo mediante la instruccion de Maven ```maven clean install``` para que se descarguen las dependencias y se forme el JAR. Para que el JAR sea autoejecutable se añade el siguiente plugin en cada archivo pom.xml de cada modulo:
+Para ello se importa el proyecto como un proyecto Maven en un framework de desarollo Java como Eclipse, después se compila cada módulo mediante la instrucción de Maven ```maven clean install``` para que se descarguen las dependencias y se forme el JAR. Para que el JAR sea autoejecutable se añade el siguiente plugin en cada archivo pom.xml de cada módulo:
 
 ```
 <build>
@@ -24,7 +24,7 @@ Para ello se importa el proyecto como un proyecto Maven en un framework de desar
 </build>
 ```
 
-Para facilitar y simplificar el proceso de formacion de los JARs, se importa el proyecto desde el proyecto padre (cache-server) y se ejecuta el comando de Maven ```maven clean install``` desde el directorio padre que contiene un pom.xml con el orden especifico en el que se deben compilar los modulos.
+Para facilitar y simplificar el proceso de formacion de los JARs, se importa el proyecto desde el proyecto padre (cache-server) y se ejecuta el mismo comando de compilación ```maven clean install``` desde el directorio padre que contiene un pom.xml con el orden especifico en el que se deben compilar los módulos.
 
 ```
 <modules>
@@ -45,7 +45,7 @@ cache-datagrid-application-3.0.1-SNAPSHOT.jar
 cache-distributed-load-application-3.0.1-SNAPSHOT.jar
 ```
 
-Se procede a crear 1 Dockerfile para cada uno de ellos para la creacion de la imagen Docker, a continuacion se muestra el Dockerfile para el modulo cache-admin-application (todos los Dockerfiles siguen el mismo formato):
+Se procede a crear 1 Dockerfile para cada uno de ellos para la creación de la imagen Docker, a continuación se muestra el Dockerfile para el módulo cache-admin-application (todos los Dockerfiles siguen el mismo formato):
 
 ```
 FROM openjdk:8-jdk-alpine
@@ -57,17 +57,9 @@ EXPOSE 8080
 CMD java -jar cache-admin-application.jar
 ```
 
-Ahora este Dockerfile y el archivo JAR correspondiente se suben en Minikube para la creacion de la imagen con el siguiente comando:
+Ahora este Dockerfile y el archivo JAR correspondiente se suben en Minikube para la creación de la imagen con el siguiente comando  ```docker build -t omair95/cache-admin-application .```
 
-```
-docker build -t omair95/cache-admin-application .
-```
-
-Para guardar las imagenes subidas se usa el repositorio publico Dockerhub de credenciales omair95/everis00, para ello primero se realiza login con el comando:
-
-```
-docker login
-```
+Para guardar las imagenes subidas se usa el repositorio publico Dockerhub de credenciales omair95/everis00, para ello primero se realiza login con el comando ```docker login```
 
 Poniendo las credenciales y finalmente:
 
@@ -75,11 +67,11 @@ Poniendo las credenciales y finalmente:
 docker push omair95/cache-admin-application
 ```
 
-Y esto se repite para los modulos cache-datagrid-application y cache-distributed-load-application.
+Y esto se repite para los módulos cache-datagrid-application y cache-distributed-load-application.
 
-### 2. Creacion de los pods para los modulos 
+### 2. Creación de pods 
 
-Para crear los pods que interactuaran entre ellos es necesario la creacion de archivos YAML para cada modulo, en este archivo se especificaran las replicas de cada pod, los volumenes compartidos, parametros de configuracion, etc. A continuacion se muestra el fichero de configuracion YAML para el modulo cache-datagrid-application (que es el primer modulo que se levanta):
+Para crear los pods que interactuaran entre ellos es necesario la creacion de archivos YAML para cada modulo, en este archivo se especifican las réplicas de cada pod, los volumenes compartidos, parámetros de configuración, etc. A continuación se muestra el fichero de configuración YAML para el módulo cache-datagrid-application (que és el primer modulo que se levanta):
 
 ```
 apiVersion: extensions/v1beta1
@@ -115,7 +107,7 @@ spec:
           periodSeconds: 5
 ```
 
-En este archivo YAML se especifican, entre otras cosas, las 6 replicas a crear del deployment y la imagen publica a descargar. Para que las diferentes replicas de este pod (cada replica contiene una instancia de Hazelcast) se pueden descubrir entre ellas para formar un cluster de Hazelcast es necesaria la creacion de un servicio de Hazelcast que se muestra a continuacion:
+En este archivo YAML se especifican, entre otras cosas, las 6 replicas a crear del deployment y la imagen pública a descargar. Para que las diferentes réplicas de este pod (cada replica contiene una instancia de Hazelcast) se pueden descubrir entre ellas para formar un cluster de Hazelcast es necesaria la creación del servicio de Hazelcast que se muestra a continuación:
 
 ```
 apiVersion: v1
@@ -136,8 +128,7 @@ spec:
     nodePort: 30003
 ```
 
-
-En este servicio se selecciona el deployment cache-datagrid-application, se escucha del puerto 5701 (es el puerto que publica cada instancia de Hazelcast) y se mapea el puerto 30003 de la maquina host (maquina windows). Ademas de crear el servicio se crea un Role-based access control (RBAC) para otorgar permisos al cluster de hazelcast (deployment cache-datagrid-application) para que pueda acceder al servicio creado, el archivo de configuracion se muestra a continuacion:
+En este servicio se selecciona el deployment cache-datagrid-application, se escucha del puerto 5701 (es el puerto que publica cada instancia de Hazelcast) y se mapea el puerto 30003 de la maquina host (maquina windows). Ademas de crear el servicio se crea un Role-based access control (RBAC) para otorgar permisos al clúster de hazelcast (deployment cache-datagrid-application) para que pueda acceder al servicio creado, el archivo de configuracion es el siguiente:
 
 ```
 apiVersion: rbac.authorization.k8s.io/v1
@@ -176,7 +167,7 @@ cache-datagrid-application-5686769db4-jtqx9   1/1       Running   1          1m 
 cache-datagrid-application-5686769db4-kggw2   1/1       Running   1          1m        172.17.0.8    minikube
 ```
 
-Y consultando los logs de algunos de ellos se puede ver que forman el cluster:
+Y consultando los logs de algunos de ellos se puede ver que forman el clúster:
 
 ```
 $ kubectl logs --follow cache-datagrid-application-5686769db4-kggw2
@@ -252,7 +243,7 @@ spec:
           type: Directory
 ```
 
-A diferencia del modulo cache-datagrid-application, en éste si que se configura un volumen compartido entre los containers de los pods y la maquina Minikube (se comparte el directorio /home), esto significa que antes de levantar este modulo se han de crear los directorios necesarios con el contenido a subir a Minikube y cambiar sus permisos para que sean accessibles. A continuacion se muestran los directorios con los permisos adequados para este modulo:
+A diferencia del modulo cache-datagrid-application, en éste si que se configura un volumen compartido entre los containers de los pods y la maquina Minikube (se comparte el directorio /home), esto significa que antes de levantar este modulo se han de crear los directorios necesarios con el contenido a subir a Minikube y cambiar sus permisos para que sean accessibles. A continuacion se muestran los directorios de Minikube con los permisos adequados para este modulo:
 
 ```
 $ ls -la
@@ -267,9 +258,9 @@ drwxrwxrwx  2 root   root   0 Nov 19 12:51 interchange
 drwxrwxrwx  2 root   root   0 Nov 19 12:51 tmp
 ```
 
-La carpeta interchange contendra los ficheros (estrictamente en formato tar.gz) que queramos subir al cluster de Hazelcast, para ellos creamos un fichero data.tar.gz que contiene una carpeta service, que a su vez contendra el archivo en question a subir, y un archivo MANIFEST.yml.
+La carpeta interchange contiene los ficheros (estrictamente en formato tar.gz) que queramos subir al cluster de Hazelcast, para ellos creamos un fichero data.tar.gz que contiene una carpeta service, que a su vez contendra el archivo a subir y un archivo MANIFEST.yml.
 
-Ahora ya se puede levantar el modulo cache-admin-application con su archivo YAML, observando los logs de cualquiera de sus 2 pods se puede ver que se ha levantado correctamente:
+Ahora ya se puede levantar el modulo cache-admin-application con su archivo YAML y consultando los logs de cualquiera de sus 2 pods se puede ver que se ha levantado correctamente:
 
 ```
 $ kubectl get pods -o wide
@@ -283,7 +274,6 @@ cache-datagrid-application-5686769db4-n592s   1/1       Running   0          7m 
 cache-datagrid-application-5686769db4-qbhpf   1/1       Running   0          7m        172.17.0.6    minikube
 cache-datagrid-application-5686769db4-z8jmv   1/1       Running   2          7m        172.17.0.7    minikube
 
-miqbalak@BCN-236MM12 MINGW64 ~/Documents/cache-distribuida/cache-server (feature/build-k8s-cluster)
 $ kubectl logs --follow cache-admin-application-d5646d6cc-mbml6
 ...
 ...
@@ -302,7 +292,7 @@ Members [6] {
 ...
 ```
 
-Ahora se levanta el ultimo modulo cache-distributed-load-application con su archivo YAML:
+Ahora se levanta el último modulo cache-distributed-load-application con su archivo YAML:
 
 ```
 apiVersion: extensions/v1beta1
@@ -334,7 +324,7 @@ spec:
           type: Directory
 ```
 
-Ya se pueden ver los 3 modulos levantados con sus respectivas replicas:
+Una vez levantado siguiendo el mismo procedimiento, se pueden ver los 3 modulos levantados con sus respectivas replicas:
 
 ```
 $ kubectl get pods -o wide -w
@@ -359,9 +349,9 @@ cache-distributed-load-application-7f7ff8ccb7-pqoie   1/1       Running   0     
 cache-distributed-load-application-7f7ff8ccb7-aksjf   1/1       Running   0          10s       172.17.0.2   minikube
 ```
 
-### 3. Comprobacion de la correcta subida de los ficheros al cluster
+### 3. Comprobación de la correcta subida de los ficheros al cluster de Hazelcast
 
-Una vez que se pone el fichero tar.gz a subir en el directorio /home/interchange, automaticamente el modulo cache-admin-application detecta el evento y lo prepara para subirlo, esto se puede ver en los logs:
+Una vez que se pone el fichero tar.gz a subir en el directorio /home/interchange, automáticamente el modulo cache-admin-application detecta el evento y lo prepara para subirlo, esto se puede ver en los logs:
 
 ```
 $ kubectl logs --follow cache-admin-application-d5646d6cc-kmz24
@@ -419,7 +409,13 @@ Members [6] {
 ...
 ```
 
-Ahora se pueden consultar estos eventos procesados por el modulo cache-admin-application desde fuera de Minikube, para ello se crea el siguiente servicio que externaliza los pods del modulo cache-admin-application para que se puedan lanzar peticiones HTTP para realizar consultas:
+Se puede ver en los logs que se crea el evento de nombre ```CON.000005```, se crea un task y despues se realiza un lock en el cluster de Hazelcast para subirlo. Después se puede ver la siguiente linea que confirma que se ha subido el archivo ya que el modulo cache-admin-application sigue buscando archivos de formato tar.gz en el directorio /home/interchange:
+
+```
+2018-11-19 13:51:20.606  INFO cache-admin-application-d5646d6cc-kmz24 --- [pool-2-thread-1] e.l.a.c.l.h.LoadEventHandler             : Directory /home/interchange doesn't contains tar.gz files to process
+```
+
+Ahora se pueden consultar este evento procesado por el modulo cache-admin-application desde fuera de Minikube, para ello se crea el siguiente servicio que externaliza los pods del modulo cache-admin-application para que se puedan lanzar peticiones HTTP para realizar consultas:
 
 ```
 apiVersion: v1
@@ -440,7 +436,7 @@ spec:
     nodePort: 30004
 ```
 
-Una vez creado, realizamos las siguientes consultas para comprobar el estado del cluster:
+Una vez creado, realizamos las siguientes consultas para comprobar el estado del modulo cache-admin-application:
 
 ```
 $ curl 192.168.99.100:30004/archived_events
@@ -449,4 +445,5 @@ $ curl 192.168.99.100:30004/archived_events
 100   113    0   113    0     0    180      0 --:--:-- --:--:-- --:--:--   180[{"eventId":"CON.000005","type":"INC","createDate":1542635257637,"updateDate":1542635908944,"status":"ARCHIVED"}]
 ```
 
-Y podemos ver que efectivamente se ha creado un evento a partir del fichero tar.gz que se habia puesto anteriormente en el directorio /home/interchange. 
+Y podemos ver que efectivamente que se ha archivado un evento que fue el que habia subido el archivo tar.gz que se habia puesto anteriormente en el directorio /home/interchange. 
+
